@@ -1,0 +1,16 @@
+﻿{
+  "filmes": [
+    {
+      "titulo": "Filme 1",
+      "capa": "https://via.placeholder.com/150x225?text=Filme+1",
+      "video": "http://link_do_filme_1.m3u8",
+      "preview": "http://link_do_filme_1.m3u8"
+    },
+    {
+      "titulo": "Filme 2",
+      "capa": "https://via.placeholder.com/150x225?text=Filme+2",
+      "video": "http://link_do_filme_2.m3u8",
+      "preview": "http://link_do_filme_2.m3u8"
+    }
+  ]
+}

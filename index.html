@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NoirFlix Cinema BW</title>
+<style>
+:root{--bg:#000;--white:#fff;--gray:#ccc;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;color:var(--white);}
+body{background:var(--bg);overflow-x:hidden;position:relative;}
+header{position:fixed;top:0;width:100%;padding:15px;background:linear-gradient(to bottom,rgba(0,0,0,.9),transparent);z-index:1000;font-size:24px;font-weight:bold;color:var(--white);}
+.hero{height:60vh;background:linear-gradient(to top,#000 20%,transparent 60%), url("https://image.tmdb.org/t/p/original/8Y43POKjjKDGI9MH89NW0NAzzp8.jpg") center/cover no-repeat;display:flex;flex-direction:column;justify-content:flex-end;padding:15px;position:relative;overflow:hidden;}
+.projector-light{position:absolute;top:-50%;left:50%;width:200%;height:200%;background:radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 80%);transform:translateX(-50%) rotate(0deg);animation: spin 30s linear infinite;pointer-events:none;}
+@keyframes spin{0%{transform:translateX(-50%) rotate(0deg);}100%{transform:translateX(-50%) rotate(360deg);}}
+.hero h1{font-size:28px;margin-bottom:8px;color:var(--white);}
+.hero p{font-size:14px;margin-bottom:12px;opacity:0.8;color:var(--gray);}
+.hero button{padding:10px 18px;background:#222;border:none;color:var(--white);font-weight:bold;cursor:pointer;border-radius:4px;margin-right:10px;transition:0.3s;font-size:14px;}
+.hero button:hover{background:#444;transform:scale(1.05);}
+.section{padding:10px;margin-top:-30px;position:relative;}
+.section h2{font-size:18px;margin-bottom:8px;color:var(--white);}
+.row{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding-bottom:10px;}
+.row::-webkit-scrollbar{display:none;}
+.movie{min-width:120px;position:relative;scroll-snap-align:start;cursor:pointer;transition:transform 0.3s;}
+.movie:hover{transform:scale(1.05);}
+.movie img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:6px;filter:grayscale(100%);box-shadow:0 10px 20px rgba(255,255,255,0.05);transition:box-shadow 0.3s;}
+.movie:hover img{box-shadow:0 15px 30px rgba(255,255,255,0.2);}
+.preview{position:absolute;top:-150px;left:0;width:200px;background:#111;border-radius:8px;opacity:0;transform:scale(.9);transition:.3s;pointer-events:none;box-shadow:0 15px 30px rgba(255,255,255,.2);z-index:20;}
+.preview video{width:100%;border-radius:8px 8px 0 0;filter:grayscale(100%);}
+.preview .info{padding:8px;font-size:12px;color:var(--white);}
+.movie:hover .preview{opacity:1;transform:scale(1);pointer-events:auto;}
+.modal{display:none;position:fixed;inset:0;background:#000;z-index:3000;align-items:center;justify-content:center;}
+.modal video{width:100%;height:100%;object-fit:contain;filter:grayscale(100%);}
+.close{position:absolute;top:10px;right:10px;font-size:28px;color:var(--white);cursor:pointer;}
+.particle{position:absolute;width:2px;height:2px;background:var(--white);border-radius:50%;opacity:0.2;animation: moveParticle linear infinite;}
+@keyframes moveParticle{0%{transform:translateY(0);}100%{transform:translateY(100vh);}}
+
+@media (max-width:768px){
+  .hero{height:50vh;padding:10px;}
+  .hero h1{font-size:22px;}
+  .hero p{font-size:12px;}
+  .hero button{padding:8px 16px;font-size:12px;margin-bottom:5px;}
+  .row{gap:6px;}
+  .movie{min-width:100px;}
+  .preview{top:-120px;width:160px;}
+  .preview .info{font-size:11px;}
+}
+@media (max-width:480px){
+  header{font-size:20px;padding:10px;}
+  .hero h1{font-size:18px;}
+  .hero p{font-size:11px;}
+  .hero button{padding:6px 12px;font-size:11px;}
+  .movie{min-width:90px;}
+  .preview{top:-100px;width:140px;}
+  .preview .info{font-size:10px;}
+}
+</style>
+</head>
+<body>
+
+<header>NOIRFLIX CINEMA BW</header>
+
+<section class="hero">
+  <div class="projector-light"></div>
+  <h1>Filme em Destaque</h1>
+  <p>Assista agora o melhor do streaming direto na sua tela.</p>
+  <div>
+    <button onclick="alert('Assistir filme')">Assistir</button>
+    <button onclick="alert('Mais informações')">Mais informações</button>
+  </div>
+</section>
+
+<section class="section"><h2>Todos os Filmes</h2><div class="row" id="filmes"></div></section>
+
+<div class="modal" id="modal">
+  <span class="close" onclick="closeModal()">✖</span>
+  <video id="player" controls autoplay></video>
+</div>
+
+<audio id="projetor-sound" autoplay loop>
+  <source src="SEU_AUDIO_PROJETOR.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+// Partículas de luz
+for(let i=0;i<50;i++){
+  const p=document.createElement('div');p.className='particle';
+  p.style.left=Math.random()*100+'vw';
+  p.style.top=Math.random()*100+'vh';
+  p.style.animationDuration=5+Math.random()*10+'s';
+  document.body.appendChild(p);
+}
+
+// Carregar filmes do JSON (gerado a partir da IPTV)
+fetch('filmes.json')
+.then(res => res.json())
+.then(data => {
+  const container = document.getElementById('filmes');
+  data.filmes.forEach(f => {
+    const div = document.createElement("div");
+    div.className = "movie";
+    div.innerHTML = `
+      <div class="preview">
+        <video src="${f.preview}" muted loop autoplay></video>
+        <div class="info"><strong>${f.titulo}</strong></div>
+      </div>
+      <img src="${f.capa}" onclick="openModal('${f.video}')">
+    `;
+    container.appendChild(div);
+  });
+});
+
+// Modal
+function openModal(src){
+  const modal = document.getElementById("modal");
+  const player = document.getElementById("player");
+  player.src = src;
+  modal.style.display = "flex";
+}
+function closeModal(){
+  const modal = document.getElementById("modal");
+  const player = document.getElementById("player");
+  player.pause(); player.src="";
+  modal.style.display = "none";
+}
+</script>
+
+</body>
+</html>
